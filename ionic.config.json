@@ -1,0 +1,7 @@
+{
+  "name": "corifood",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
