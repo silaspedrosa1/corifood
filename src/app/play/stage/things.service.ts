@@ -6,8 +6,8 @@ import { sampleArray, sampleInRange } from "src/app/shared/random";
 const NEW_THING_TICK = 1000;
 const DEFAULT_GRAVITY = 400;
 const MAX_Y = 500;
-const MAX_THING_WIDTH = 200;
-const MAX_THING_HEIGHT = 200;
+const MAX_THING_WIDTH = 150;
+const MAX_THING_HEIGHT = 150;
 
 const cuscuzImg = new Image();
 cuscuzImg.src = "assets/images/cuscuz.png";
@@ -47,12 +47,14 @@ const things: (() => Thing)[] = [
 ];
 
 @Injectable()
-export class StageService {
+export class ThingsService {
   intervalRef;
   public things: Thing[] = [];
   public oldThings: Thing[] = [];
 
-  constructor() {
+  constructor() {}
+
+  start() {
     this.things.push(sampleArray(things)());
     this.intervalRef = setInterval(() => {
       this.things.push(sampleArray(things)());

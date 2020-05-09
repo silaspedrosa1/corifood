@@ -1,45 +1,69 @@
 import { Component, ViewChild, ElementRef, OnInit } from "@angular/core";
 import { COLS, BLOCK_SIZE, ROWS } from "../play.constants";
-import { StageService } from "./stage.service";
+import { ThingsService } from "./things.service";
+import { Character } from "./character.model";
+import { Sprite } from "./sprite.model";
+
+const charImg = new Image();
+charImg.src = "assets/images/goku.png";
+const charSprite = new Sprite({
+  img: charImg,
+  maxHeight: 150,
+  maxWidth: 150,
+});
 
 @Component({
   selector: "app-stage",
   templateUrl: "./stage.component.html",
   styleUrls: ["./stage.component.scss"],
-  providers: [StageService],
+  providers: [ThingsService],
 })
 export class StageComponent implements OnInit {
   // Get reference to the canvas.
   @ViewChild("board", { static: true })
   canvas: ElementRef<HTMLCanvasElement>;
+  @ViewChild("boardContainer", { static: true })
+  boardContainer: ElementRef<HTMLDivElement>;
 
   ctx: CanvasRenderingContext2D;
   requestId: number;
 
-  constructor(public stageService: StageService) {}
+  character: Character;
+  canvasPosition: { x: number; y: number };
+  canvasSize: { width: number; height: number };
 
-  ngOnInit() {
-    this.initBoard();
-    // this.resetGame();
-  }
+  constructor(public thingsService: ThingsService) {}
+
+  ngOnInit() {}
 
   initBoard() {
-    // Get the 2D context that we draw on.
-    this.ctx = this.canvas.nativeElement.getContext("2d");
+    const canvasElement = this.canvas.nativeElement;
+    this.ctx = canvasElement.getContext("2d");
 
-    // Calculate size of canvas from constants.
-    this.ctx.canvas.width = COLS * BLOCK_SIZE;
-    this.ctx.canvas.height = ROWS * BLOCK_SIZE;
+    this.ctx.canvas.width = this.boardContainer.nativeElement.clientWidth;
+    this.ctx.canvas.height = this.boardContainer.nativeElement.clientHeight;
 
-    // Scale so we don't need to give size on every draw.
-    // this.ctx.scale(BLOCK_SIZE, BLOCK_SIZE);
+    this.canvasSize = {
+      width: this.ctx.canvas.width,
+      height: this.ctx.canvas.height,
+    };
+
+    this.canvasPosition = {
+      x: canvasElement.offsetLeft,
+      y: canvasElement.offsetTop,
+    };
+
+    this.character = new Character({
+      x: this.canvasSize.width / 2,
+      y: this.canvasSize.height - charSprite.height,
+      sprite: charSprite,
+    });
   }
 
   play() {
-    // this.resetGame();
-    // this.piece = new Piece(this.ctx);
-    // this.next.drawNext(this.ctxNext);
-    // this.time.start = performance.now();
+    console.log("play!");
+    this.initBoard();
+    this.thingsService.start();
 
     // If we have an old game running a game then cancel the old
     if (this.requestId) {
@@ -50,15 +74,16 @@ export class StageComponent implements OnInit {
   }
 
   animate(now = 0) {
-    this.stageService.fall(now);
+    this.thingsService.fall(now);
     this.draw();
     this.requestId = requestAnimationFrame(this.animate.bind(this));
   }
 
   draw() {
     this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
-    this.stageService.things.forEach((thing) => {
-      console.log("drawing", thing);
+    this.ctx.fillStyle = "white";
+    this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+    this.thingsService.things.forEach((thing) => {
       this.ctx.drawImage(
         thing.sprite.img,
         thing.x,
@@ -67,5 +92,12 @@ export class StageComponent implements OnInit {
         thing.height
       );
     });
+    this.ctx.drawImage(
+      this.character.sprite.img,
+      this.character.x,
+      this.character.y,
+      this.character.width,
+      this.character.height
+    );
   }
 }
