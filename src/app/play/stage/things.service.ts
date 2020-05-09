@@ -2,59 +2,64 @@ import { Injectable } from "@angular/core";
 import { Thing, ThingStatus } from "./thing.model";
 import { Sprite } from "./sprite.model";
 import { sampleArray, sampleInRange } from "src/app/shared/random";
+import { ImageService } from "../image.service";
 
-const NEW_THING_TICK = 1000;
 const DEFAULT_GRAVITY = 400;
 const MAX_THING_WIDTH = 150;
 const MAX_THING_HEIGHT = 150;
 
-const cuscuzImg = new Image();
-cuscuzImg.src = "assets/images/cuscuz.png";
-const tapiocaImg = new Image();
-tapiocaImg.src = "assets/images/tapioca.jpeg";
-
-const sprites: Sprite[] = [
-  new Sprite({
-    maxHeight: MAX_THING_HEIGHT,
-    maxWidth: MAX_THING_WIDTH,
-    img: cuscuzImg,
-  }),
-  new Sprite({
-    maxHeight: MAX_THING_HEIGHT,
-    maxWidth: MAX_THING_WIDTH,
-    img: tapiocaImg,
-  }),
-];
-
-const things: (() => Thing)[] = [
-  () =>
-    new Thing({
-      acceleration: DEFAULT_GRAVITY,
-      sprite: sprites[0],
-      t0: performance.now(),
-      x: sampleInRange(0, 500),
-      y: 0,
-    }),
-  () =>
-    new Thing({
-      acceleration: DEFAULT_GRAVITY,
-      sprite: sprites[1],
-      t0: performance.now(),
-      x: sampleInRange(0, 500),
-      y: 0,
-    }),
-];
-
 @Injectable()
 export class ThingsService {
+  sprites: Sprite[];
+  possibleThings: (() => Thing)[];
   intervalRef;
   private _things: Thing[] = [];
   get things() {
     return this._things;
   }
 
+  constructor(private imageService: ImageService) {}
+
+  init(canvasWidth: number) {
+    this.sprites = [
+      new Sprite({
+        maxHeight: MAX_THING_HEIGHT,
+        maxWidth: MAX_THING_WIDTH,
+        img: this.imageService.images.cuscuz,
+      }),
+      new Sprite({
+        maxHeight: MAX_THING_HEIGHT,
+        maxWidth: MAX_THING_WIDTH,
+        img: this.imageService.images.tapioca,
+      }),
+    ];
+
+    this.possibleThings = [
+      () => {
+        const sprite = this.sprites[0];
+        return new Thing({
+          acceleration: DEFAULT_GRAVITY,
+          sprite: sprite,
+          t0: performance.now(),
+          x: sampleInRange(0, canvasWidth - sprite.width),
+          y: 0,
+        });
+      },
+      () => {
+        const sprite = this.sprites[1];
+        return new Thing({
+          acceleration: DEFAULT_GRAVITY,
+          sprite: sprite,
+          t0: performance.now(),
+          x: sampleInRange(0, canvasWidth - sprite.width),
+          y: 0,
+        });
+      },
+    ];
+  }
+
   produce(): Thing {
-    const newThing = sampleArray(things)();
+    const newThing = sampleArray(this.possibleThings)();
     this._things.push(newThing);
     return newThing;
   }

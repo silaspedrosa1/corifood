@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">corifood</string>
+    <string name="title_activity_main">corifood</string>
+    <string name="package_name">com.coriandergames.corifood</string>
+    <string name="custom_url_scheme">com.coriandergames.corifood</string>
+</resources>

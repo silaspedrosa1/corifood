@@ -11,21 +11,16 @@ import { Character } from "./character.model";
 import { Sprite } from "./sprite.model";
 import { Boundary } from "./boundary.model";
 import { CollisionService, CollisionStrategy } from "./collision.service";
+import { ImageService } from "../image.service";
+import { AudioService } from "../audio.service";
 
-const charImg = new Image();
-charImg.src = "assets/images/goku.png";
-const charSprite = new Sprite({
-  img: charImg,
-  maxHeight: 150,
-  maxWidth: 150,
-});
-const THING_PRODUCTION_PROBABILITY = 0.01;
+const THING_PRODUCTION_PROBABILITY = 0.05;
 
 @Component({
   selector: "app-stage",
   templateUrl: "./stage.component.html",
   styleUrls: ["./stage.component.scss"],
-  providers: [ThingsService, CollisionService],
+  providers: [ThingsService, CollisionService, ImageService, AudioService],
 })
 export class StageComponent implements OnInit {
   // Get reference to the canvas.
@@ -50,12 +45,16 @@ export class StageComponent implements OnInit {
 
   constructor(
     public thingsService: ThingsService,
-    private collisionService: CollisionService
+    private collisionService: CollisionService,
+    private audioService: AudioService,
+    private imageService: ImageService
   ) {}
 
   ngOnInit() {}
 
-  initBoard() {
+  async initBoard() {
+    await Promise.all([this.audioService.init(), this.imageService.init()]);
+
     this.hit = 0;
     this.lost = 0;
 
@@ -75,6 +74,13 @@ export class StageComponent implements OnInit {
       y: canvasElement.offsetTop,
     };
 
+    this.thingsService.init(this.canvasSize.width);
+
+    const charSprite = new Sprite({
+      img: this.imageService.images.goku,
+      maxHeight: 150,
+      maxWidth: 150,
+    });
     this.character = new Character({
       x: this.canvasSize.width / 2,
       y: this.canvasSize.height - charSprite.height,
@@ -115,9 +121,10 @@ export class StageComponent implements OnInit {
     });
   }
 
-  play() {
+  async play() {
     console.log("play!");
-    this.initBoard();
+    await this.initBoard();
+    this.audioService.playAsBackgroundTrack(["bg1", "bg2"]);
 
     // If we have an old game running a game then cancel the old
     if (this.requestId) {
@@ -147,6 +154,7 @@ export class StageComponent implements OnInit {
           this.lost += 1;
           newThing.dispose();
           this.collisionService.unregisterAllWith(newThing);
+          this.audioService.audioTracks.lost.playOnce();
         },
       });
       charCollision = this.collisionService.register({
@@ -157,6 +165,7 @@ export class StageComponent implements OnInit {
           this.hit += 1;
           newThing.dispose();
           this.collisionService.unregisterAllWith(newThing);
+          this.audioService.audioTracks.hit.playOnce();
         },
       });
     }
