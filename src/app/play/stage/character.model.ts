@@ -12,9 +12,9 @@ export interface ICharacter {
 }
 
 export class Character implements ICharacter {
-  readonly x: number;
-  readonly y: number;
-  readonly sprite: ISprite;
+  x: number;
+  y: number;
+  sprite: ISprite;
   get width() {
     return this.sprite.width;
   }
@@ -29,10 +29,10 @@ export class Character implements ICharacter {
   }
 
   moveLeft() {
-    return new Character({ x: this.x - 50, y: this.y, sprite: this.sprite });
+    this.x -= 50;
   }
 
   moveRight() {
-    return new Character({ x: this.x + 50, y: this.y, sprite: this.sprite });
+    this.x += 50;
   }
 }

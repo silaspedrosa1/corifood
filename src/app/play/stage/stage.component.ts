@@ -9,6 +9,8 @@ import { COLS, BLOCK_SIZE, ROWS, KEY } from "../play.constants";
 import { ThingsService } from "./things.service";
 import { Character } from "./character.model";
 import { Sprite } from "./sprite.model";
+import { Boundary } from "./boundary.model";
+import { CollisionService } from "./collision.service";
 
 const charImg = new Image();
 charImg.src = "assets/images/goku.png";
@@ -22,7 +24,7 @@ const charSprite = new Sprite({
   selector: "app-stage",
   templateUrl: "./stage.component.html",
   styleUrls: ["./stage.component.scss"],
-  providers: [ThingsService],
+  providers: [ThingsService, CollisionService],
 })
 export class StageComponent implements OnInit {
   // Get reference to the canvas.
@@ -32,13 +34,20 @@ export class StageComponent implements OnInit {
   boardContainer: ElementRef<HTMLDivElement>;
 
   ctx: CanvasRenderingContext2D;
-  requestId: number;
-
-  character: Character;
   canvasPosition: { x: number; y: number };
   canvasSize: { width: number; height: number };
 
-  constructor(public thingsService: ThingsService) {}
+  requestId: number;
+
+  character: Character;
+  leftWall: Boundary;
+  rightWall: Boundary;
+  floor: Boundary;
+
+  constructor(
+    private thingsService: ThingsService,
+    private collisionService: CollisionService
+  ) {}
 
   ngOnInit() {}
 
@@ -64,6 +73,42 @@ export class StageComponent implements OnInit {
       y: this.canvasSize.height - charSprite.height,
       sprite: charSprite,
     });
+
+    this.leftWall = new Boundary({
+      x: 0,
+      y: 0,
+      width: 0,
+      height: this.canvasSize.height,
+    });
+    this.rightWall = new Boundary({
+      x: this.canvasSize.width,
+      y: 0,
+      width: 0,
+      height: this.canvasSize.height,
+    });
+    this.floor = new Boundary({
+      x: 0,
+      y: this.canvasSize.height,
+      width: this.canvasSize.width,
+      height: this.canvasSize.height,
+    });
+
+    this.collisionService.register({
+      a: this.leftWall,
+      b: this.character,
+      onCollision: () => (this.character.x = 0),
+    });
+    this.collisionService.register({
+      a: this.rightWall,
+      b: this.character,
+      onCollision: () =>
+        (this.character.x = this.rightWall.x - this.character.width),
+    });
+    // this.collisionService.register({
+    //   a: this.floor,
+    //   b: this.character,
+    //   onCollision: () => console.log("collision char floor"),
+    // });
   }
 
   play() {
@@ -81,6 +126,7 @@ export class StageComponent implements OnInit {
 
   animate(now = 0) {
     this.thingsService.fall(now);
+    this.collisionService.detect();
     this.draw();
     this.requestId = requestAnimationFrame(this.animate.bind(this));
   }
@@ -114,10 +160,10 @@ export class StageComponent implements OnInit {
         this.play();
         break;
       case KEY.LEFT:
-        this.character = this.character.moveLeft();
+        this.character.moveLeft();
         break;
       case KEY.RIGHT:
-        this.character = this.character.moveRight();
+        this.character.moveRight();
       default:
         break;
     }
