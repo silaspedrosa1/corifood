@@ -45,6 +45,8 @@ export class StageComponent implements OnInit {
   rightWall: Boundary;
   floor: Boundary;
 
+  hit: number;
+
   constructor(
     public thingsService: ThingsService,
     private collisionService: CollisionService
@@ -53,6 +55,8 @@ export class StageComponent implements OnInit {
   ngOnInit() {}
 
   initBoard() {
+    this.hit = 0;
+
     const canvasElement = this.canvas.nativeElement;
     this.ctx = canvasElement.getContext("2d");
 
@@ -136,11 +140,27 @@ export class StageComponent implements OnInit {
 
     if (Math.random() < THING_PRODUCTION_PROBABILITY) {
       const newThing = this.thingsService.produce();
-      this.collisionService.register({
+      let floorCollision;
+      let charCollision;
+      floorCollision = this.collisionService.register({
         a: this.floor,
         b: newThing,
         collisionStrategy: CollisionStrategy.collideOnce,
-        onCollision: () => newThing.dispose(),
+        onCollision: () => {
+          newThing.dispose();
+          this.collisionService.unregisterAllWith(newThing);
+        },
+      });
+      charCollision = this.collisionService.register({
+        a: this.character,
+        b: newThing,
+        collisionStrategy: CollisionStrategy.collideOnce,
+        onCollision: () => {
+          console.log("bateu no  boneco!!!!!");
+          this.hit += 1;
+          newThing.dispose();
+          this.collisionService.unregisterAllWith(newThing);
+        },
       });
     }
   }

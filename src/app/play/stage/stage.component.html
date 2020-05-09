@@ -1,6 +1,15 @@
 <div class="menu">
-  <ion-label>things: {{ thingsService.things.length }}</ion-label>
-  <ion-button (click)="play()">Play</ion-button>
+  <ion-grid>
+    <ion-row>
+      <ion-label>things: {{ thingsService.things.length }}</ion-label>
+    </ion-row>
+    <ion-row>
+      <ion-label>hit: {{ hit }}</ion-label>
+    </ion-row>
+    <ion-row>
+      <ion-button (click)="play()">Play</ion-button>
+    </ion-row>
+  </ion-grid>
 </div>
 <div #boardContainer class="game-board-container">
   <canvas #board class="game-board"></canvas>

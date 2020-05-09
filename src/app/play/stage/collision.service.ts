@@ -43,6 +43,10 @@ export class CollisionService {
     if (index >= 0) this.observers.splice(index, 1);
   }
 
+  unregisterAllWith(x: GameObject) {
+    this.observers = this.observers.filter((o) => o.a !== x && o.b !== x);
+  }
+
   private doesOverlap(a: GameObject, b: GameObject): boolean {
     return (
       a.x < b.x + b.width &&
