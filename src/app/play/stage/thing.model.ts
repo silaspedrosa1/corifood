@@ -10,14 +10,22 @@ export interface IThing {
   width: number;
   height: number;
   sprite: ISprite;
+  status: ThingStatus;
+}
+
+export enum ThingStatus {
+  falling,
+  disposed,
 }
 
 export class Thing implements IThing {
-  readonly t0: number;
-  readonly acceleration: number;
-  readonly x: number;
-  readonly y: number;
-  readonly sprite: ISprite;
+  t0: number;
+  acceleration: number;
+  x: number;
+  y: number;
+  sprite: ISprite;
+  status: ThingStatus = ThingStatus.falling;
+
   get width() {
     return this.sprite.width;
   }
@@ -41,15 +49,11 @@ export class Thing implements IThing {
 
   fall(t: number) {
     const deltaT = (t - this.t0) / 1000;
-    const y = (this.acceleration * Math.pow(deltaT, 2)) / 2;
-    return new Thing({
-      t0: this.t0,
-      acceleration: this.acceleration,
-      x: this.x,
-      sprite: this.sprite,
-      y,
-    });
-    // s = s0 + v0t + at^2/2
+    this.y = (this.acceleration * Math.pow(deltaT, 2)) / 2;
+  }
+
+  dispose() {
+    this.status = ThingStatus.disposed;
   }
 
   // spawn() {

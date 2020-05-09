@@ -1,11 +1,10 @@
 import { Injectable } from "@angular/core";
-import { Thing } from "./thing.model";
+import { Thing, ThingStatus } from "./thing.model";
 import { Sprite } from "./sprite.model";
 import { sampleArray, sampleInRange } from "src/app/shared/random";
 
 const NEW_THING_TICK = 1000;
 const DEFAULT_GRAVITY = 400;
-const MAX_Y = 500;
 const MAX_THING_WIDTH = 150;
 const MAX_THING_HEIGHT = 150;
 
@@ -49,25 +48,22 @@ const things: (() => Thing)[] = [
 @Injectable()
 export class ThingsService {
   intervalRef;
-  public things: Thing[] = [];
-  public oldThings: Thing[] = [];
+  private _things: Thing[] = [];
+  get things() {
+    return this._things;
+  }
 
-  constructor() {}
+  produce(): Thing {
+    const newThing = sampleArray(things)();
+    this._things.push(newThing);
+    return newThing;
+  }
 
-  start() {
-    this.things.push(sampleArray(things)());
-    this.intervalRef = setInterval(() => {
-      this.things.push(sampleArray(things)());
-    }, NEW_THING_TICK);
+  cleanDisposed() {
+    this._things = this._things.filter((t) => t.status === ThingStatus.falling);
   }
 
   fall(now: number) {
-    const things = this.things.map((t) => t.fall(now));
-    this.oldThings = things.filter((t) => !this.isValid(t));
-    this.things = things.filter((t) => this.isValid(t));
-  }
-
-  isValid(thing: Thing): boolean {
-    return thing.y <= MAX_Y;
+    this._things.forEach((t) => t.fall(now));
   }
 }

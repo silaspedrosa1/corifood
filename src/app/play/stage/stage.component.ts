@@ -10,7 +10,7 @@ import { ThingsService } from "./things.service";
 import { Character } from "./character.model";
 import { Sprite } from "./sprite.model";
 import { Boundary } from "./boundary.model";
-import { CollisionService } from "./collision.service";
+import { CollisionService, CollisionStrategy } from "./collision.service";
 
 const charImg = new Image();
 charImg.src = "assets/images/goku.png";
@@ -19,6 +19,7 @@ const charSprite = new Sprite({
   maxHeight: 150,
   maxWidth: 150,
 });
+const THING_PRODUCTION_PROBABILITY = 0.01;
 
 @Component({
   selector: "app-stage",
@@ -45,7 +46,7 @@ export class StageComponent implements OnInit {
   floor: Boundary;
 
   constructor(
-    private thingsService: ThingsService,
+    public thingsService: ThingsService,
     private collisionService: CollisionService
   ) {}
 
@@ -96,11 +97,13 @@ export class StageComponent implements OnInit {
     this.collisionService.register({
       a: this.leftWall,
       b: this.character,
+      collisionStrategy: CollisionStrategy.collideForever,
       onCollision: () => (this.character.x = 0),
     });
     this.collisionService.register({
       a: this.rightWall,
       b: this.character,
+      collisionStrategy: CollisionStrategy.collideForever,
       onCollision: () =>
         (this.character.x = this.rightWall.x - this.character.width),
     });
@@ -114,7 +117,6 @@ export class StageComponent implements OnInit {
   play() {
     console.log("play!");
     this.initBoard();
-    this.thingsService.start();
 
     // If we have an old game running a game then cancel the old
     if (this.requestId) {
@@ -127,8 +129,20 @@ export class StageComponent implements OnInit {
   animate(now = 0) {
     this.thingsService.fall(now);
     this.collisionService.detect();
+    this.thingsService.cleanDisposed();
+
     this.draw();
     this.requestId = requestAnimationFrame(this.animate.bind(this));
+
+    if (Math.random() < THING_PRODUCTION_PROBABILITY) {
+      const newThing = this.thingsService.produce();
+      this.collisionService.register({
+        a: this.floor,
+        b: newThing,
+        collisionStrategy: CollisionStrategy.collideOnce,
+        onCollision: () => newThing.dispose(),
+      });
+    }
   }
 
   draw() {
