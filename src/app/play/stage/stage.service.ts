@@ -6,6 +6,8 @@ import { sampleArray, sampleInRange } from "src/app/shared/random";
 const NEW_THING_TICK = 1000;
 const DEFAULT_GRAVITY = 400;
 const MAX_Y = 500;
+const MAX_THING_WIDTH = 200;
+const MAX_THING_HEIGHT = 200;
 
 const cuscuzImg = new Image();
 cuscuzImg.src = "assets/images/cuscuz.png";
@@ -13,16 +15,22 @@ const tapiocaImg = new Image();
 tapiocaImg.src = "assets/images/tapioca.jpeg";
 
 const sprites: Sprite[] = [
-  new Sprite({ height: 628, width: 1200, img: cuscuzImg }),
-  new Sprite({ height: 156, width: 324, img: tapiocaImg }),
+  new Sprite({
+    maxHeight: MAX_THING_HEIGHT,
+    maxWidth: MAX_THING_WIDTH,
+    img: cuscuzImg,
+  }),
+  new Sprite({
+    maxHeight: MAX_THING_HEIGHT,
+    maxWidth: MAX_THING_WIDTH,
+    img: tapiocaImg,
+  }),
 ];
 
 const things: (() => Thing)[] = [
   () =>
     new Thing({
       acceleration: DEFAULT_GRAVITY,
-      height: 100,
-      width: 100,
       sprite: sprites[0],
       t0: performance.now(),
       x: sampleInRange(0, 500),
@@ -31,8 +39,6 @@ const things: (() => Thing)[] = [
   () =>
     new Thing({
       acceleration: DEFAULT_GRAVITY,
-      height: 100,
-      width: 100,
       sprite: sprites[1],
       t0: performance.now(),
       x: sampleInRange(0, 500),

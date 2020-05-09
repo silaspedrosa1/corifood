@@ -17,24 +17,38 @@ export class Thing implements IThing {
   readonly acceleration: number;
   readonly x: number;
   readonly y: number;
-  readonly width: number;
-  readonly height: number;
   readonly sprite: ISprite;
+  get width() {
+    return this.sprite.width;
+  }
+  get height() {
+    return this.sprite.height;
+  }
 
-  constructor(args: IThing) {
+  constructor(args: {
+    t0: number;
+    acceleration: number;
+    x: number;
+    y: number;
+    sprite: ISprite;
+  }) {
     this.t0 = args.t0;
     this.acceleration = args.acceleration;
     this.x = args.x;
     this.y = args.y;
-    this.width = args.width;
-    this.height = args.height;
     this.sprite = args.sprite;
   }
 
   fall(t: number) {
     const deltaT = (t - this.t0) / 1000;
     const y = (this.acceleration * Math.pow(deltaT, 2)) / 2;
-    return new Thing({ ...this, y });
+    return new Thing({
+      t0: this.t0,
+      acceleration: this.acceleration,
+      x: this.x,
+      sprite: this.sprite,
+      y,
+    });
     // s = s0 + v0t + at^2/2
   }
 
