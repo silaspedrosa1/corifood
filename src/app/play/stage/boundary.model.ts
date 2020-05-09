@@ -3,7 +3,7 @@ export interface IBoundary {
   y: number;
   width: number;
   height: number;
-}∏
+}
 
 export class Boundary implements IBoundary {
   readonly x: number;
