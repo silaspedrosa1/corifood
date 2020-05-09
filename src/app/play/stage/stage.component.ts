@@ -1,5 +1,11 @@
-import { Component, ViewChild, ElementRef, OnInit } from "@angular/core";
-import { COLS, BLOCK_SIZE, ROWS } from "../play.constants";
+import {
+  Component,
+  ViewChild,
+  ElementRef,
+  OnInit,
+  HostListener,
+} from "@angular/core";
+import { COLS, BLOCK_SIZE, ROWS, KEY } from "../play.constants";
 import { ThingsService } from "./things.service";
 import { Character } from "./character.model";
 import { Sprite } from "./sprite.model";
@@ -99,5 +105,21 @@ export class StageComponent implements OnInit {
       this.character.width,
       this.character.height
     );
+  }
+
+  @HostListener("window:keydown", ["$event"])
+  keyEvent(event: KeyboardEvent) {
+    switch (event.keyCode) {
+      case KEY.SPACE:
+        this.play();
+        break;
+      case KEY.LEFT:
+        this.character = this.character.moveLeft();
+        break;
+      case KEY.RIGHT:
+        this.character = this.character.moveRight();
+      default:
+        break;
+    }
   }
 }
