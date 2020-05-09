@@ -46,6 +46,7 @@ export class StageComponent implements OnInit {
   floor: Boundary;
 
   hit: number;
+  lost: number;
 
   constructor(
     public thingsService: ThingsService,
@@ -56,6 +57,7 @@ export class StageComponent implements OnInit {
 
   initBoard() {
     this.hit = 0;
+    this.lost = 0;
 
     const canvasElement = this.canvas.nativeElement;
     this.ctx = canvasElement.getContext("2d");
@@ -111,11 +113,6 @@ export class StageComponent implements OnInit {
       onCollision: () =>
         (this.character.x = this.rightWall.x - this.character.width),
     });
-    // this.collisionService.register({
-    //   a: this.floor,
-    //   b: this.character,
-    //   onCollision: () => console.log("collision char floor"),
-    // });
   }
 
   play() {
@@ -147,6 +144,7 @@ export class StageComponent implements OnInit {
         b: newThing,
         collisionStrategy: CollisionStrategy.collideOnce,
         onCollision: () => {
+          this.lost += 1;
           newThing.dispose();
           this.collisionService.unregisterAllWith(newThing);
         },
@@ -156,7 +154,6 @@ export class StageComponent implements OnInit {
         b: newThing,
         collisionStrategy: CollisionStrategy.collideOnce,
         onCollision: () => {
-          console.log("bateu no  boneco!!!!!");
           this.hit += 1;
           newThing.dispose();
           this.collisionService.unregisterAllWith(newThing);
